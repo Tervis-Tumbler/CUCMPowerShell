@@ -17,7 +17,7 @@
 </soapenv:Envelope>
 "@
 
-    $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL
+    $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName executeSQLQuery
 
     $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
@@ -44,10 +44,30 @@ function Remove-CUCMPhone {
 
 function Invoke-CUCMSOAPAPIFunction {
     param(
-        [parameter(Mandatory)]$AXL
+        [parameter(Mandatory)]$AXL,
+        [parameter(Mandatory)]$MethodName
     )
+    
+#    add-type @"
+#    using System.Net;
+#    using System.Security.Cryptography.X509Certificates;
+#    public class TrustAllCertsPolicy : ICertificatePolicy {
+#        public bool CheckValidationResult(
+#            ServicePoint srvPoint, X509Certificate certificate,
+#            WebRequest request, int certificateProblem) {
+#            return true;
+#        }
+#    }
+#"@
+#    [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+
     $Credential = Import-Clixml $env:USERPROFILE\CUCMCredential.txt
-    $Result = Invoke-WebRequest -ContentType "text/xml" -Headers @{"SOAPAction"="CUCM:DB ver=9.1"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential
+    #if ($AXLWebSession) {
+    #    $Result = Invoke-WebRequest -ContentType "text/xml" -Headers @{"SOAPAction"="CUCM:DB ver=9.1"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential -WebSession $AXLWebSession
+    #} else {
+        #$Result = Invoke-WebRequest -ContentType "text/xml;charset=UTF-8" -Headers @{"SOAPAction"="CUCM:DB ver=9.1 $MethodName"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential -SessionVariable AXLWebSession
+        $Result = Invoke-WebRequest -ContentType "text/xml" -Headers @{"SOAPAction"="CUCM:DB ver=9.1"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential -SessionVariable AXLWebSession
+    #}
 
     $XmlContent = [xml]$Result.Content
 
