@@ -17,7 +17,9 @@
 </soapenv:Envelope>
 "@
 
-    Invoke-CUCMSOAPAPIFunction -AXL $AXL
+    $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL
+
+    $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
 
 function Remove-CUCMPhone {
@@ -45,9 +47,11 @@ function Invoke-CUCMSOAPAPIFunction {
         [parameter(Mandatory)]$AXL
     )
     $Credential = Import-Clixml $env:USERPROFILE\CUCMCredential.txt
-    $Result = Invoke-WebRequest -ContentType "text/xml" -Headers @{"SOAPAction"="CUCM:DB ver=8.5"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential
+    $Result = Invoke-WebRequest -ContentType "text/xml" -Headers @{"SOAPAction"="CUCM:DB ver=9.1"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential
 
     $XmlContent = [xml]$Result.Content
+
+    $XmlContent
 }
 
 function New-CUCMCredential {
