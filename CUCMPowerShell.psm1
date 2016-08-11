@@ -86,9 +86,27 @@ function Invoke-CUCMSOAPAPIFunction {
 "@
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
-    $Credential = Import-Clixml $env:USERPROFILE\CUCMCredential.txt   
-    $Result = Invoke-WebRequest -ContentType "text/xml;charset=UTF-8" -Headers @{"SOAPAction"="CUCM:DB ver=9.1 $MethodName"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential -SessionVariable AXLWebSession
-    $XmlContent = [xml]$Result.Content
+    $Credential = Import-Clixml $env:USERPROFILE\CUCMCredential.txt
+     
+    #This method should work but intermittently will give The remote server returned an error: (505) Http Version Not Supported,
+    #unless you run it through fiddler to try and see what is wrong and then it works fine :(, 
+    #$Result = Invoke-WebRequest -ContentType "text/xml;charset=UTF-8" -Headers @{SOAPAction="CUCM:DB ver=9.1 $MethodName";Accept="Accept: text/*"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential -SessionVariable AXLWebSession
+    #$XmlContent = [xml]$Result.Content
+
+    $WebRequest = [System.Net.WebRequest]::Create("https://ter-cucm-pub1:8443/axl/") 
+    $WebRequest.Method = "POST"
+    $WebRequest.ProtocolVersion = [System.Net.HttpVersion]::Version10
+    $WebRequest.Headers.Add("SOAPAction","CUCM:DB ver=9.1 $MethodName")
+    $WebRequest.ContentType = "text/xml"
+    $WebRequest.Credentials = $Credential.GetNetworkCredential()
+    $Stream = $WebRequest.GetRequestStream();
+    $Body = [byte[]][char[]]$AXL
+    $Stream.Write($Body, 0, $Body.Length);
+    $WebResponse = $WebRequest.GetResponse()
+    $WebResponseStream = $WebResponse.GetResponseStream()
+    $StreamReader = new-object System.IO.StreamReader $WebResponseStream
+    $ResponeData = $StreamReader.ReadToEnd()
+    $XmlContent = [xml]$ResponeData
     $XmlContent
 }
 
