@@ -20,6 +20,7 @@
 
     $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
+
 function Get-CUCMPhone {
     param(
         [Parameter(Mandatory)][String]$Name
@@ -60,8 +61,8 @@ function Remove-CUCMPhone {
 
 function Set-CUCMLine {
     param(
-        [Parameter(Mandatory)][String]$DN,
-        [Parameter(Mandatory)][String]$RoutePartition,
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$Pattern,
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$RoutePartitionName,
         [String]$Description,
         [String]$AlertingName,
         [String]$AsciiAlertingName
@@ -72,8 +73,8 @@ function Set-CUCMLine {
    <soapenv:Header/>
    <soapenv:Body>
       <ns:updateLine sequence="?">
-         <pattern>$DN</pattern>
-         <routePartitionName>$RoutePartition</routePartitionName>
+         <pattern>$Pattern</pattern>
+         <routePartitionName>$RoutePartitionName</routePartitionName>
          <description>$Description</description>
          <alertingName>$AlertingName</alertingName>
          <asciiAlertingName>$AsciiAlertingName</asciiAlertingName>
