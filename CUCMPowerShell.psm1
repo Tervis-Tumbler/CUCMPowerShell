@@ -1,6 +1,6 @@
-﻿function Get-CUCMDeviceName {
+﻿function Invoke-CUCMSQLQuery {
     param(
-        [Parameter(Mandatory)][String]$UserIDAssociatedWithDevice
+        [Parameter(Mandatory)][String]$SQL
     )
 
     $AXL = @"
@@ -8,28 +8,50 @@
    <soapenv:Header/>
    <soapenv:Body>
       <ns:executeSQLQuery sequence="?">
-        <sql>select device.name, enduser.userid from device, enduser, enduserdevicemap
-            where device.pkid=enduserdevicemap.fkdevice and  
-            enduser.pkid=enduserdevicemap.fkenduser and enduser.userid = '$UserIDAssociatedWithDevice'
-        </sql>
+        <sql>$SQL</sql>
       </ns:executeSQLQuery>
    </soapenv:Body>
 </soapenv:Envelope>
 "@
     $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName executeSQLQuery
-
     $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
+
+$QueryForDevicesByUserID = @"
+select device.name, enduser.userid from device, enduser, enduserdevicemap
+where device.pkid=enduserdevicemap.fkdevice and  
+enduser.pkid=enduserdevicemap.fkenduser and enduser.userid = '$UserIDAssociatedWithDevice'
+"@
+
+function Get-CUCMUser {
+    param(
+        [Parameter(Mandatory)][String]$UserID
+    )
+
+    $AXL = @"
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.cisco.com/AXL/API/9.1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:getUser>
+         <userid>$UserID</userid>
+      </ns:getUser>
+   </soapenv:Body>
+</soapenv:Envelope>
+"@
+    $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName getUser
+    $XmlContent.Envelope.Body.getUserResponse.return.user
+}
+
 function Get-CUCMPhone {
     param(
-        [Parameter(Mandatory)][String]$DeviceName
+        [Parameter(Mandatory)][String]$Name
     )
     $AXL = @"
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.cisco.com/AXL/API/9.1">
     <soapenv:Header/>
     <soapenv:Body>
         <ns:getPhone sequence="?">
-            <name>$DeviceName</name>
+            <name>$Name</name>
         </ns:getPhone>
     </soapenv:Body>
 </soapenv:Envelope>
@@ -60,8 +82,8 @@ function Remove-CUCMPhone {
 
 function Set-CUCMLine {
     param(
-        [Parameter(Mandatory)][String]$DN,
-        [Parameter(Mandatory)][String]$RoutePartition,
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$Pattern,
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$RoutePartitionName,
         [String]$Description,
         [String]$AlertingName,
         [String]$AsciiAlertingName
@@ -72,8 +94,8 @@ function Set-CUCMLine {
    <soapenv:Header/>
    <soapenv:Body>
       <ns:updateLine sequence="?">
-         <pattern>$DN</pattern>
-         <routePartitionName>$RoutePartition</routePartitionName>
+         <pattern>$Pattern</pattern>
+         <routePartitionName>$RoutePartitionName</routePartitionName>
          <description>$Description</description>
          <alertingName>$AlertingName</alertingName>
          <asciiAlertingName>$AsciiAlertingName</asciiAlertingName>
