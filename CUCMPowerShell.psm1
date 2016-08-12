@@ -17,13 +17,6 @@
     $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
 
-<<<<<<< HEAD
-$QueryForDevicesByUserID = @"
-select device.name, enduser.userid from device, enduser, enduserdevicemap
-where device.pkid=enduserdevicemap.fkdevice and  
-enduser.pkid=enduserdevicemap.fkenduser and enduser.userid = '$UserIDAssociatedWithDevice'
-"@
-
 function Get-CUCMUser {
     param(
         [Parameter(Mandatory)][String]$UserID
@@ -43,8 +36,6 @@ function Get-CUCMUser {
     $XmlContent.Envelope.Body.getUserResponse.return.user
 }
 
-=======
->>>>>>> origin/master
 function Get-CUCMPhone {
     param(
         [Parameter(Mandatory)][String]$Name
@@ -66,10 +57,10 @@ function Get-CUCMPhone {
 
 function Remove-CUCMPhone {
     param(
-        [Parameter(Mandatory)][String]$Name
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$Name
     )
-
-    $AXL = @"
+    process {
+        $AXL = @"
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.cisco.com/AXL/API/9.1">
     <soapenv:Header/>
     <soapenv:Body>
@@ -80,13 +71,14 @@ function Remove-CUCMPhone {
 </soapenv:Envelope>
 "@
 
-    Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName removePhone
+        Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName removePhone
+    }
 }
 
 function Set-CUCMLine {
     param(
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$Pattern,
-        [Parameter(Mandatory,ValueFromPipelineByPropertyName)][String]$RoutePartitionName,
+        [Parameter(Mandatory)][String]$RoutePartitionName,
         [String]$Description,
         [String]$AlertingName,
         [String]$AsciiAlertingName
