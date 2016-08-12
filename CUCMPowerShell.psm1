@@ -22,7 +22,7 @@
 }
 function Get-CUCMPhone {
     param(
-        [Parameter(Mandatory)][String]$DeviceName
+        [Parameter(Mandatory)][String]$Name
     )
     $AXL = @"
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.cisco.com/AXL/API/9.1">
