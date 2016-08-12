@@ -20,6 +20,25 @@
 
     $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
+function Get-CUCMPhone {
+    param(
+        [Parameter(Mandatory)][String]$DeviceName
+    )
+    $AXL = @"
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.cisco.com/AXL/API/9.1">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <ns:getPhone sequence="?">
+            <name>$DeviceName</name>
+        </ns:getPhone>
+    </soapenv:Body>
+</soapenv:Envelope>
+"@
+     $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName getPhone
+     
+     $XmlContent.Envelope.Body.getPhoneResponse.return.phone
+}
+
 function Remove-CUCMPhone {
     param(
         [Parameter(Mandatory)][String]$Name
