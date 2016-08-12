@@ -17,6 +17,7 @@
     $XmlContent.Envelope.Body.executeSQLQueryResponse.return.row
 }
 
+<<<<<<< HEAD
 $QueryForDevicesByUserID = @"
 select device.name, enduser.userid from device, enduser, enduserdevicemap
 where device.pkid=enduserdevicemap.fkdevice and  
@@ -42,6 +43,8 @@ function Get-CUCMUser {
     $XmlContent.Envelope.Body.getUserResponse.return.user
 }
 
+=======
+>>>>>>> origin/master
 function Get-CUCMPhone {
     param(
         [Parameter(Mandatory)][String]$Name
