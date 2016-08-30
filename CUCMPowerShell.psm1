@@ -36,6 +36,7 @@ function Get-CUCMUser {
     $XmlContent.Envelope.Body.getUserResponse.return.user
 }
 
+function Find-CUCMUser {
     param(
         [Parameter(Mandatory)][String]$firstName
     )    
@@ -59,6 +60,7 @@ function Get-CUCMUser {
     $XmlContent.Envelope.Body.listUserResponse.return.user
 }
 
+function Find-CUCMPhone {
     param(
         [Parameter(Mandatory)][String]$Name
     )    
@@ -83,6 +85,7 @@ function Get-CUCMUser {
     $XmlContent.Envelope.Body.listPhoneResponse.return.phone    
 }
 
+function Find-CUCMLine {
     param(
         [Parameter(Mandatory)][String]$Pattern
     )    
