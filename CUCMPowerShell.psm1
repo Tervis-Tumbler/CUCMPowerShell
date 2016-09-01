@@ -195,6 +195,7 @@ function Invoke-CUCMSOAPAPIFunction {
     }
 "@
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Ssl3
 
     $Credential = Import-Clixml $env:USERPROFILE\CUCMCredential.txt
      
