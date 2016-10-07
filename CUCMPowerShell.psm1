@@ -229,13 +229,31 @@ function New-CUCMCredential {
 
 function Add-CUCMPhone {
     param (
-        [Parameter(Mandatory)][String]$UserID
-        #[Parameter(Mandatory)][String]$DispalyName
-    )
-    $uuid = Add-CUCMLine -UserId $UserID
+        [Parameter(Mandatory)][String]$UserID,
+        [Parameter(Mandatory)][String]$DeviceName,
+        [Parameter(Mandatory)][String]$Description,
+        [Parameter(Mandatory)][String]$Product,
+        [Parameter(Mandatory)][String]$Class,
+        [Parameter(Mandatory)][String]$Protocol,
+        [Parameter(Mandatory)][String]$ProtocolSide,
+        [Parameter(Mandatory)][String]$CallingSearchSpaceName,
+        [Parameter(Mandatory)][String]$DevicePoolName,
+        [Parameter(Mandatory)][String]$SecurityProfileName,
+        [Parameter(Mandatory)][String]$SipProfileName,
+        [Parameter(Mandatory)][String]$MediaResurceListName,
+        [Parameter(Mandatory)][String]$Locationname,
+        [Parameter(Mandatory)][String]$Dirnuuid,
+        [Parameter(Mandatory)][String]$Label,
+        [Parameter(Mandatory)][String]$AsciiLabel,
+        [Parameter(Mandatory)][String]$Display,
+        [Parameter(Mandatory)][String]$DisplayAscii,
+        [Parameter(Mandatory)][String]$E164Mask,
+        [Parameter(Mandatory)][String]$PhoneTemplateName
 
-    $AdUser = Get-ADUser $UserID
-    $DisplayName = $AdUser.name
+
+
+    )
+    
 
 $AXL = @"
 
@@ -244,28 +262,28 @@ $AXL = @"
    <soapenv:Body>
       <ns:addPhone sequence="?">
          <phone ctiid="?">
-            <name>CSF$UserID</name>
-            <description>$DisplayName</description>
-            <product>Cisco Unified Client Services Framework</product>
-            <class>Phone</class>
-            <protocol>SIP</protocol>
-            <protocolSide>User</protocolSide>
-            <callingSearchSpaceName uuid="?">Gateway_outbound_CSS</callingSearchSpaceName>
-            <devicePoolName uuid="?">TPA_DP</devicePoolName>
-            <securityProfileName>Cisco Unified Client Services Framework - Standard SIP Non-Secure</securityProfileName>
-            <sipProfileName>Standard SIP Profile</sipProfileName>
-            <mediaResourceListName>TPA_MRL</mediaResourceListName>
-            <locationName>Hub_None</locationName>
+            <name>$DeviceName</name>
+            <description>$Description</description>
+            <product>$Product</product>
+            <class>$Class</class>
+            <protocol>$Protocol</protocol>
+            <protocolSide>$ProtocolSide</protocolSide>
+            <callingSearchSpaceName uuid="?">$CallingSearchSpaceName</callingSearchSpaceName>
+            <devicePoolName uuid="?">$DevicePoolName</devicePoolName>
+            <securityProfileName>$SecurityProfileName</securityProfileName>
+            <sipProfileName>$SipProfileName</sipProfileName>
+            <mediaResourceListName>$MediaResourceListName</mediaResourceListName>
+            <locationName>$LocationName</locationName>
             <ownerUserName>$UserID</ownerUserName>
                <lines>
                <line>
                   <index>1</index>
-                  <dirn uuid="{ED4445B1-6750-B685-67DB-21E7D1B9797B}"> </dirn> 
-                  <label>$DisplayName</label>
-                  <asciiLabel>$DisplayName</asciiLabel>
-                  <display>$DisplayName</display>
-                  <displayAscii>$DisplayName</displayAscii>
-                  <e164Mask>941441XXXX</e164Mask>
+                  <dirn uuid="$Dirnuuid"> </dirn> 
+                  <label>$Label</label>
+                  <asciiLabel>$AsciiLabel</asciiLabel>
+                  <display>$Display</display>
+                  <displayAscii>$DisplayAscii</displayAscii>
+                  <e164Mask>$E164Mask</e164Mask>
                   <associatedEndusers>
                             <enduser>
                                 <userId>$UserID</userId>
@@ -273,7 +291,7 @@ $AXL = @"
                         </associatedEndusers>
                </line>
             </lines>
-            <phoneTemplateName uuid="?">Standard Client Services Framework</phoneTemplateName>
+            <phoneTemplateName uuid="?">$PhoneTemplateName</phoneTemplateName>
          </phone>
       </ns:addPhone>
    </soapenv:Body>
@@ -284,108 +302,20 @@ $AXL = @"
     
     }
 
-function Add-CUCMLine  {
-
-     param (
-        #[Parameter(Mandatory)][String]$Pattern,
-        [Parameter(Mandatory)][String]$UserID
-        #[Parameter(Mandatory)][String]$RoutePartition,
-        #[Parameter(Mandatory)][String]$CSS
-    )
-
-    $Pattern = Find-CUCMLine -Pattern 7% -Description "" | select -First 1
-    Set-ADUser $UserID -OfficePhone $Pattern
-    Sync-CUCMtoLDAP 
-    $ADUser = Get-ADUser $UserID
-    $DisplayName = $ADUser.name
-    
 
 
-$AXL = @"
-
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.cisco.com/AXL/API/9.1">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <ns:updateLine sequence="?">
-         <pattern>$Pattern</pattern>
-         <routePartitionName>UCCX_PT</routePartitionName>
-         <description>$DisplayName</description>
-         <alertingName>$DisplayName</alertingName>
-         <asciiAlertingName>$DisplayName</asciiAlertingName>
-         <voiceMailProfileName>Voicemail</voiceMailProfileName>
-         <shareLineAppearanceCssName>UCCX_CSS</shareLineAppearanceCssName>
-         <userHoldMohAudioSourceId></userHoldMohAudioSourceId>
-         <networkHoldMohAudioSourceId></networkHoldMohAudioSourceId>
-         <callForwardAll>
-                   <forwardToVoiceMail>false</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-                   <secondaryCallingSearchSpaceName uuid="?">UCCX_CSS</secondaryCallingSearchSpaceName>
-         </callForwardAll>
-         <callForwardBusy>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardBusy>
-         <callForwardBusyInt>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>,,
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardBusyInt>
-         <callForwardNoAnswer>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardNoAnswer>
-         <callForwardNoAnswerInt>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardNoAnswerInt>
-         <callForwardNoCoverage>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardNoCoverage>
-         <callForwardNoCoverageInt>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardNoCoverageInt>
-         <callForwardOnFailure>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardOnFailure>
-         <callForwardOnFailure>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardOnFailure>
-         <callForwardNotRegistered>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardNotRegistered>
-         <callForwardNotRegisteredInt>
-                   <forwardToVoiceMail>true</forwardToVoiceMail>
-                   <callingSearchSpaceName uuid="?">UCCX_CSS</callingSearchSpaceName>
-         </callForwardNotRegisteredInt>
-         <Lines>
-         <lineIdentifier>
-         <index>1</index>
-         <display>$DisplayName</display>
-         </lineIdentifier>
-         </Lines>
-    </ns:updateLine>
-    </soapenv:Body>
-</soapenv:Envelope>
-
-"@
-   
-     $XmlContent = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName updateLine
-     $XmlContent.Envelope.Body.updateLineResponse.return
-    
-    
-    }
 
 function Set-CUCMUser  {
 
      param (
-        #[Parameter(Mandatory)][String]$Pattern,
-        [Parameter(Mandatory)][String]$UserID
-        #[Parameter(Mandatory)][String]$RoutePartition,
-        #[Parameter(Mandatory)][String]$CSS
+        [Parameter(Mandatory)][String]$UserID,
+        $Pattern,
+        $imAndPresenceEnable,
+        $serviceProfile,
+        $routePartitionName,
+        $userGroupName,
+        $userRolesName
+          
     )
 
     $ADUser = Get-ADUser $UserID -Properties TelephoneNumber
@@ -405,15 +335,15 @@ $AXL = @"
          </associatedDevices>
          <primaryExtension>
                     <pattern>$Pattern</pattern>
-                    <routePartitionName>UCCX_PT</routePartitionName>
+                    <routePartitionName>$routePartitionName</routePartitionName>
          </primaryExtension>
          <associatedGroups>
            <userGroup>
-           <name>CCM END USER SETTINGS</name>
+           <name>$userGroupName</name>
            </userGroup>
           </associatedGroups>
           <userRoles>
-          <name>CCM END USER SETTINGS</name>
+          <name>$userRolesName</name>
           </userRoles>
          </ns:updateUser>
    </soapenv:Body>
@@ -428,14 +358,14 @@ $AXL = @"
 function Set-CUCMIPCCExtension  {
 
      param (
-        #[Parameter(Mandatory)][String]$Pattern,
-        [Parameter(Mandatory)][String]$UserID
-        #[Parameter(Mandatory)][String]$RoutePartition,
-        #[Parameter(Mandatory)][String]$CSS
+        [Parameter(Mandatory)][String]$Pattern,
+        [Parameter(Mandatory)][String]$UserID,
+        [Parameter(Mandatory)][String]$RoutePartition,
+        [Parameter(Mandatory)][String]$CSS
     )
 
-    $ADUser = Get-ADUser $UserID -Properties TelephoneNumber
-    $Pattern = $ADUser.TelephoneNumber
+    #$ADUser = Get-ADUser $UserID -Properties TelephoneNumber
+    #$Pattern = $ADUser.TelephoneNumber
 
 $AXL = @"
 
@@ -444,7 +374,7 @@ $AXL = @"
    <soapenv:Body>
       <ns:executeSQLUpdate sequence="?">
         <sql>insert into endusernumplanmap (fkenduser,fknumplan,tkdnusage) values((select pkid from enduser where userid='$UserID'),
-        (select numplan.pkid from numplan join routepartition on(routepartition.pkid = numplan.fkroutepartition) where numplan.dnorpattern = '$Pattern' and routepartition.name = 'UCCX_PT'),'2')
+        (select numplan.pkid from numplan join routepartition on(routepartition.pkid = numplan.fkroutepartition) where numplan.dnorpattern = '$Pattern' and routepartition.name = '$RoutePartition'),'2')
         </sql>
       </ns:executeSQLUpdate>
    </soapenv:Body>
@@ -459,7 +389,7 @@ $AXL = @"
 function Get-CUCMAppuser  {
 
      param (
-         #[Parameter(Mandatory)][String]$AppUserID
+         [Parameter(Mandatory)][String]$UserID
        
      )
 
@@ -469,7 +399,7 @@ $AXL = @"
     <soapenv:Header/>
     <soapenv:Body>
         <ns:getAppUser>
-        <userid>axlcups</userid>
+        <userid>$UserID</userid>
         </ns:getAppUser>
     </soapenv:Body>
 </soapenv:Envelope>
@@ -477,19 +407,17 @@ $AXL = @"
 "@
 
     $XmlContect = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName getAppuser
-    $XmlContect.Envelope.Body.getAppUserResponse.return.appUser.associatedDevices.device  
+    $XmlContect.Envelope.Body.getAppUserResponse.return.appUser 
 }
 
 function Set-CUCMAppuser  {
 
      param (
-         [Parameter(Mandatory)][String]$UserID
-       
-     )
+         [Parameter(Mandatory)][String]$UserID,
+         $DeviceNames       
+     )      
 
-     $devices = Get-CUCMAppuser 
-     ForEach ($device in $devices) {
-      
+
 
 $AXL = @"
 
@@ -497,20 +425,21 @@ $AXL = @"
     <soapenv:Header/>
     <soapenv:Body>
         <ns:updateAppUser>
-        <userid>axlcups</userid>
+        <userid>$UserID</userid>
         <associatedDevices>
-          <device>$device</device>
-          <device>CSF$UserID<device>
+            $(
+                foreach ($DeviceName in $DeviceNames) {
+                  New-XMLElement -Name device -InnerText $DeviceName | Select -ExpandProperty OuterXML
+                }
+            )
         </associatedDevices>
         </ns:updateAppUser>
     </soapenv:Body>
 </soapenv:Envelope>
 
 "@
-}
 
     $XmlContect = Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName updateAppuser
-
 }
 
 function Sync-CUCMtoLDAP {
