@@ -309,7 +309,7 @@ function Set-CUCMUser  {
 
      param (
         [Parameter(Mandatory)][String]$UserID,
-        $Pattern,
+        [Parameter(Mandatory)][String]$Pattern,
         $imAndPresenceEnable,
         $serviceProfile,
         $routePartitionName,
@@ -414,7 +414,7 @@ function Set-CUCMAppuser  {
 
      param (
          [Parameter(Mandatory)][String]$UserID,
-         $DeviceNames       
+         [Parameter(Mandatory)][String]$DeviceNames       
      )      
 
 
@@ -443,6 +443,10 @@ $AXL = @"
 }
 
 function Sync-CUCMtoLDAP {
+    param (
+         [Parameter(Mandatory)][String]$LDAPDirectory
+
+    )
 
 $AXL = @"
 
@@ -450,7 +454,7 @@ $AXL = @"
     <soapenv:Header/>
     <soapenv:Body>
         <ns:doLdapSync>
-        <name>TERV_AD</name>
+        <name>$LDAPDirectory</name>
         <sync>true</sync>
         </ns:doLdapSync>
     </soapenv:Body>
