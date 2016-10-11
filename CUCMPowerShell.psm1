@@ -414,7 +414,7 @@ function Set-CUCMAppuser  {
 
      param (
          [Parameter(Mandatory)][String]$UserID,
-         [Parameter(Mandatory)][String]$DeviceNames       
+         $DeviceNames       
      )      
 
 
