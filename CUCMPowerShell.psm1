@@ -240,19 +240,17 @@ function Add-CUCMPhone {
         [Parameter(Mandatory)][String]$DevicePoolName,
         [Parameter(Mandatory)][String]$SecurityProfileName,
         [Parameter(Mandatory)][String]$SipProfileName,
-        [Parameter(Mandatory)][String]$MediaResurceListName,
+        [Parameter(Mandatory)][String]$MediaResourceListName,
         [Parameter(Mandatory)][String]$Locationname,
         [Parameter(Mandatory)][String]$Dirnuuid,
-        [Parameter(Mandatory)][String]$Label,
-        [Parameter(Mandatory)][String]$AsciiLabel,
-        [Parameter(Mandatory)][String]$Display,
-        [Parameter(Mandatory)][String]$DisplayAscii,
-        [Parameter(Mandatory)][String]$E164Mask,
-        [Parameter(Mandatory)][String]$PhoneTemplateName
-
-
-
-    )
+        [Parameter(Mandatory)][String]$PhoneTemplateName,
+        [String]$Label,
+        [String]$AsciiLabel,
+        [String]$Display,
+        [String]$DisplayAscii,
+        [String]$E164Mask
+        
+   )
     
 
 $AXL = @"
@@ -300,9 +298,7 @@ $AXL = @"
 "@
     Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName addPhone
     
-    }
-
-
+}
 
 
 function Set-CUCMUser  {
@@ -310,16 +306,16 @@ function Set-CUCMUser  {
      param (
         [Parameter(Mandatory)][String]$UserID,
         [Parameter(Mandatory)][String]$Pattern,
-        $imAndPresenceEnable,
-        $serviceProfile,
-        $routePartitionName,
-        $userGroupName,
-        $userRolesName
+        $ImAndPresenceEnable,
+        $ServiceProfile,
+        $RoutePartitionName,
+        $UserGroupName,
+        $UserRolesName,
+        $DeviceName
           
     )
 
-    $ADUser = Get-ADUser $UserID -Properties TelephoneNumber
-    $Pattern = $ADUser.TelephoneNumber
+   
 
 $AXL = @"
 
@@ -328,22 +324,22 @@ $AXL = @"
    <soapenv:Body>
       <ns:updateUser sequence="?">
          <userid>$UserID</userid>
-         <imAndPresenceEnable>true</imAndPresenceEnable>
-         <serviceProfile>UCServiceProfile_Migration_1</serviceProfile>
+         <imAndPresenceEnable>$ImAndPresenceEnable</imAndPresenceEnable>
+         <serviceProfile>$ServiceProfile</serviceProfile>
          <associatedDevices>
-                <device>CSF$UserID</device>
+                <device>$DeviceName</device>
          </associatedDevices>
          <primaryExtension>
                     <pattern>$Pattern</pattern>
-                    <routePartitionName>$routePartitionName</routePartitionName>
+                    <routePartitionName>$RoutePartitionName</routePartitionName>
          </primaryExtension>
          <associatedGroups>
            <userGroup>
-           <name>$userGroupName</name>
+           <name>$UserGroupName</name>
            </userGroup>
           </associatedGroups>
           <userRoles>
-          <name>$userRolesName</name>
+          <name>$UserRolesName</name>
           </userRoles>
          </ns:updateUser>
    </soapenv:Body>
@@ -364,8 +360,6 @@ function Set-CUCMIPCCExtension  {
         [Parameter(Mandatory)][String]$CSS
     )
 
-    #$ADUser = Get-ADUser $UserID -Properties TelephoneNumber
-    #$Pattern = $ADUser.TelephoneNumber
 
 $AXL = @"
 
