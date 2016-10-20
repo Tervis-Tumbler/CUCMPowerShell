@@ -223,7 +223,10 @@ function Invoke-CUCMSOAPAPIFunction {
 }
 
 function New-CUCMCredential {
-    $CUCMCredential = Get-Credential
+    param(
+    $CUCMCredential = (Get-Credential)
+    )
+    
     $CUCMCredential | Export-Clixml $env:USERPROFILE\CUCMCredential.txt
 }
 
