@@ -1,4 +1,6 @@
-﻿function Invoke-CUCMSQLQuery {
+﻿#Requires -Modules WebServicesPowerShellProxyBuilder
+
+function Invoke-CUCMSQLQuery {
     param(
         [Parameter(Mandatory)][String]$SQL
     )
@@ -184,19 +186,11 @@ function Invoke-CUCMSOAPAPIFunction {
         [parameter(Mandatory)]$AXL,
         [parameter(Mandatory)]$MethodName
     )
-    add-type @"
-    using System.Net;
-    using System.Security.Cryptography.X509Certificates;
-    public class TrustAllCertsPolicy : ICertificatePolicy {
-        public bool CheckValidationResult(
-            ServicePoint srvPoint, X509Certificate certificate,
-            WebRequest request, int certificateProblem) {
-            return true;
-        }
-    }
-"@
-    [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Ssl3
+    
+    $CurrentCertificatePolicy = Get-CurrentCertificatePolicy
+    $CurrentSecurityProtocol = Get-CurrentSecurityProtocol
+    Set-CertificatePolicy -TrustAllCerts
+    Set-SecurityProtocol -SecurityProtocol Ssl3
 
     $Credential = Import-Clixml $env:USERPROFILE\CUCMCredential.txt
      
@@ -220,6 +214,9 @@ function Invoke-CUCMSOAPAPIFunction {
     $ResponeData = $StreamReader.ReadToEnd()
     $XmlContent = [xml]$ResponeData
     $XmlContent
+
+    Set-CertificatePolicy -CertificatePolicy $CurrentCertificatePolicy
+    Set-SecurityProtocol -SecurityProtocol $CurrentSecurityProtocol
 }
 
 function New-CUCMCredential {
@@ -462,8 +459,3 @@ $AXL = @"
     Invoke-CUCMSOAPAPIFunction -AXL $AXL -MethodName doLdapSync
 
 }
-
-
-
-
-
