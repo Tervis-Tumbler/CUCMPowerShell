@@ -199,6 +199,12 @@ function Invoke-CUCMSOAPAPIFunction {
     #$Result = Invoke-WebRequest -ContentType "text/xml;charset=UTF-8" -Headers @{SOAPAction="CUCM:DB ver=9.1 $MethodName";Accept="Accept: text/*"} -Body $AXL -Uri https://ter-cucm-pub1:8443/axl/ -Method Post -Credential $Credential -SessionVariable AXLWebSession
     #$XmlContent = [xml]$Result.Content
     
+    #For me it looks like CUCM requiers at least Tls 1.1 and sends a Expect100Continue
+    #After this changes the code works fine. 
+    $AllProtocols = [System.Net.SecurityProtocolType]'Tls11,Tls12'
+    [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+    [System.Net.ServicePointManager]::Expect100Continue = $false
+    
     $WebRequest = [System.Net.WebRequest]::Create("https://ter-cucm-pub1:8443/axl/") 
     $WebRequest.Method = "POST"
     $WebRequest.ProtocolVersion = [System.Net.HttpVersion]::Version10
